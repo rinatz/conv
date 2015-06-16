@@ -43,7 +43,7 @@
  * When you want to convert user defined type of T to string,
  * you should define operator<<(std::ostream&, T).
  * And conv::to<std::string>(T) will be enabled.
- * (STL containers are like so.)
+ * (conv::to<std::string>() for STL containers are like so.)
  *
  * The MIT License (MIT)
  *
