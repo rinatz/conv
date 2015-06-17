@@ -1,9 +1,16 @@
 # conv
-Utility functions to convert integers, character strings and other objects for C++.
-It is inspired std.conv module of D programming language.
+
+conv is a utility function to convert integers, character strings and other objects for C++.
+It is inspired by std.conv module for D programming language.
+
+## Install
+
+conv is a header only library and you just copy include/conv to your project directory.
+
+## Examples
 
 conv::to&lt;T&gt;() converts an integer, floating point, boolean value
-and character strings to the type of T:
+and character strings to the type of T.
 
     conv::to<char>(10);               // == static_cast<char>(10)
     conv::to<std::string>(10);        // "10"
@@ -13,10 +20,7 @@ and character strings to the type of T:
     conv::to<int>("0xFF");            // 255
     conv::to<std::wstring>("Hello");  // L"Hello"
 
-Note that the type of char is treated not as a character string but as an integer.
-i.e., conv::to&lt;char&gt;("1") is not 49, which is the ascii code of '1', but 1, which is an integer.
-
-STL containers can be converted as well:
+STL containers can be converted as well.
 
     std::pair<int, int> p(10, 20);
     std::string pstring = conv::to<std::string>(p);  // "(10, 20)"
@@ -35,6 +39,21 @@ STL containers can be converted as well:
 
 but it now only supports std::pair, std::vector and std::map.
 
-When you want to convert user defined type of T to string, you should define operator<<(std::ostream&, T).
+## Note
+
+Note that the type of char is treated not as a character string but as an integer.
+i.e., conv::to&lt;char&gt;("1") is not 49, which is the ascii code for '1', but 1, which is an integer.
+
+## For user defined types
+
+When you want to convert user defined type of T to string, you should define operator&lt;&lt;(std::ostream&, T).
 And conv::to&lt;std::string&gt;(T) will be enabled.
 (conv::to&lt;std::string&gt;() for STL containers are like so.)
+
+## Version
+
+0.1.0
+
+## Compilers
+
+conv has tested on Visual C++ 2013 and maybe it works for other compilers as well.
