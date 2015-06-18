@@ -70,6 +70,7 @@
 #ifndef CONV_CONV_H_
 #define CONV_CONV_H_
 
+#include <cassert>
 #include <cstdlib>
 
 #include <map>
@@ -80,6 +81,51 @@
 
 namespace conv {
 
+const std::string& version() {
+    static std::string ver("0.1.1");
+    return ver;
+}
+
+//-----------------------------------------------------------------------------
+
+namespace internal {
+
+template <typename CharT>
+const std::basic_string<CharT>& space();
+
+template <>
+inline const std::string& space<char>() {
+    static const std::string s(" \t\v\r\n");
+    return s;
+}
+
+template <>
+inline const std::wstring& space<wchar_t>() {
+    static const std::wstring s(L" \t\v\r\n");
+    return s;
+}
+
+//-----------------------------------------------------------------------------
+
+template <typename CharT>
+const std::basic_string<CharT>& hex();
+
+template <>
+inline const std::string& hex<char>() {
+    static const std::string s("0x");
+    return s;
+}
+
+template <>
+inline const std::wstring& hex<wchar_t>() {
+    static const std::wstring s(L"0x");
+    return s;
+}
+
+}  // namespace internal
+
+//-----------------------------------------------------------------------------
+
 template <typename T>
 class to {
    public:
@@ -88,34 +134,38 @@ class to {
         value_ = static_cast<T>(value);
     }
 
-    explicit to(const char* str) { from_string(str); }
-    explicit to(const std::string& str) { from_string(str); }
+    explicit to(const char* str) { from_string<char>(str); }
+    explicit to(const std::string& str) { from_string<char>(str); }
 
-    explicit to(const wchar_t* wstr) { from_wstring(wstr); }
-    explicit to(const std::wstring& wstr) { from_wstring(wstr); }
+    explicit to(const wchar_t* str) { from_string<wchar_t>(str); }
+    explicit to(const std::wstring& str) { from_string<wchar_t>(str); }
 
     operator T() const { return value_; }
 
    private:
-    void from_string(const std::string& str) {
-        std::string trimmed = str.substr(str.find_first_not_of(" "));
+    template <typename CharT>
+    void from_string(const std::basic_string<CharT>& str) {
+        typedef std::basic_string<CharT> string_t;
+        typedef std::basic_istringstream<CharT> isstream_t;
 
-        if (trimmed.size() >= 2 && trimmed.substr(0, 2) == "0x") {
-            std::istringstream(trimmed) >> std::hex >> value_;
+        static const string_t& space = internal::space<CharT>();
+        static const string_t& hex = internal::hex<CharT>();
+
+        size_t first = str.find_first_not_of(space);
+        assert(first != string_t::npos);
+
+        size_t last = str.find_last_not_of(space);
+        assert(last != string_t::npos);
+
+        string_t trimmed = str.substr(first, last - first + 1);
+        assert(trimmed.find_first_of(space) == string_t::npos);
+
+        isstream_t in(trimmed);
+
+        if (in.str().size() >= 2 && in.str().substr(0, 2) == hex) {
+            in >> std::hex >> value_;
         } else {
-            trimmed = trimmed.substr(trimmed.find_first_not_of("0"));
-            std::istringstream(trimmed) >> value_;
-        }
-    }
-
-    void from_wstring(const std::wstring& wstr) {
-        std::wstring trimmed = wstr.substr(wstr.find_first_not_of(L" "));
-
-        if (trimmed.size() >= 2 && trimmed.substr(0, 2) == L"0x") {
-            std::wistringstream(trimmed) >> std::hex >> value_;
-        } else {
-            trimmed = trimmed.substr(trimmed.find_first_not_of(L"0"));
-            std::wistringstream(trimmed) >> value_;
+            in >> value_;
         }
     }
 
@@ -243,8 +293,8 @@ class to<std::string> : public std::string {
     }
 
     explicit to(bool value) {
-        value ? std::string::operator=("true") : std::string::operator=(
-                                                     "false");
+        value ? std::string::operator=("true")
+              : std::string::operator=("false");
     }
 
     explicit to(const char* str) : std::string(str) {}
@@ -292,8 +342,8 @@ class to<std::wstring> : public std::wstring {
     }
 
     explicit to(bool value) {
-        (value) ? std::wstring::operator=(L"true") : std::wstring::operator=(
-                                                         L"false");
+        (value) ? std::wstring::operator=(L"true")
+                : std::wstring::operator=(L"false");
     }
 
     explicit to(const char* str) { from_string(str); }
@@ -317,8 +367,8 @@ class to<std::pair<T1, T2> > : public std::pair<T1, T2> {
    public:
     template <typename U1, typename U2>
     explicit to(const std::pair<U1, U2>& p) {
-        first = to<T1>(p.first);
-        second = to<T2>(p.second);
+        std::pair<T1, T2>::first = to<T1>(p.first);
+        std::pair<T1, T2>::second = to<T2>(p.second);
     }
 };
 
@@ -329,9 +379,9 @@ class to<std::vector<T> > : public std::vector<T> {
    public:
     template <typename U>
     explicit to(const std::vector<U>& v)
-          : std::vector<T>(v.size()) {
+        : std::vector<T>(v.size()) {
         for (size_t i = 0; i < v.size(); ++i) {
-            operator[](i) = to<T>(v[i]);
+            std::vector<T>::operator[](i) = to<T>(v[i]);
         }
     }
 };
@@ -346,7 +396,8 @@ class to<std::map<K1, V1> > : public std::map<K1, V1> {
         typedef typename std::map<K2, V2>::const_iterator iterator;
 
         for (iterator iter = m.begin(); iter != m.end(); ++iter) {
-            operator[](to<K1>(iter->first)) = to<V1>(iter->second);
+            std::map<K1, V1>::operator[](to<K1>(iter->first)) =
+                to<V1>(iter->second);
         }
     }
 };
