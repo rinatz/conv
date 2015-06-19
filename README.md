@@ -39,6 +39,14 @@ STL containers can be converted as well.
 
 but it now only supports std::pair, std::vector and std::map.
 
+When converting strings to STL containers, you can use the function of parse().
+
+    std::vector<int> v = conv::parse<std::vector<int> >("[0, 1, 2]");
+
+Left and right brackets and comma can be changed to other strings.
+
+    std::vector<int> v = conv::parse<std::vector<int> >("<0|1|2>", conv::lbracket("<").rbracket(">").comma("|"));
+
 ## Note
 
 Note that the type of char is treated not as a character string but as an integer.
