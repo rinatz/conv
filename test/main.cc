@@ -60,3 +60,19 @@ TEST_CASE("map -> string", "map") {
 
     REQUIRE(conv::to<std::string>(m) == "{a: 0, b: 1, c: 2}");
 }
+
+TEST_CASE("parse string", "[string]") {
+    std::vector<int> v(3);
+    v[0] = 0;
+    v[1] = 1;
+    v[2] = 2;
+
+    REQUIRE(conv::parse<std::vector<int> >("[0,1,2]") == v);
+    REQUIRE(conv::parse<std::vector<int> >("[0, 1, 2]") == v);
+    REQUIRE(conv::parse<std::vector<int> >("  [0,1,2]  ") == v);
+    REQUIRE(conv::parse<std::vector<int> >("[0 1 2]", conv::comma(" ")) == v);
+    REQUIRE(conv::parse<std::vector<int> >("  0,1,2]", conv::lbracket("")) == v);
+    REQUIRE(conv::parse<std::vector<int> >("[0,1,2  ", conv::rbracket("")) == v);
+    REQUIRE(conv::parse<std::vector<int> >("[0[1[2]", conv::comma("[")) == v);
+    REQUIRE(conv::parse<std::vector<int> >("[0]1]2]", conv::comma("]")) == v);
+}

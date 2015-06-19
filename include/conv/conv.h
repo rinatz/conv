@@ -82,7 +82,7 @@
 namespace conv {
 
 const std::string& version() {
-    static std::string ver("0.2.0");
+    static std::string ver("0.3.0");
     return ver;
 }
 
@@ -413,6 +413,97 @@ class to<std::map<K1, V1> > : public std::map<K1, V1> {
         }
     }
 };
+
+//-----------------------------------------------------------------------------
+
+class parse_options {
+   public:
+       parse_options() : lbracket_("["), rbracket_("]"), comma_(",") {}
+
+       parse_options& lbracket(const std::string& s) {
+           lbracket_ = s;
+           return *this;
+       }
+
+       const std::string& lbracket() const { return lbracket_; }
+
+       parse_options& rbracket(const std::string& s) {
+           rbracket_ = s;
+           return *this;
+       }
+
+       const std::string& rbracket() const { return rbracket_; }
+
+       parse_options& comma(const std::string& s) {
+           comma_ = s;
+           return *this;
+       }
+
+       const std::string& comma() const { return comma_; }
+
+   private:
+       std::string lbracket_;
+       std::string rbracket_;
+       std::string comma_;
+};
+
+inline parse_options lbracket(const std::string& s) {
+    return parse_options().lbracket(s);
+}
+
+inline parse_options rbracket(const std::string& s) {
+    return parse_options().rbracket(s);
+}
+
+inline parse_options comma(const std::string& s) {
+    return parse_options().comma(s);
+}
+
+template <typename VecT>
+inline VecT parse(const std::string& str, const parse_options& opt = parse_options()) {
+    typedef char char_t;
+    typedef std::basic_string<char_t> string_t;
+    typedef typename VecT::value_type value_t;
+
+    static const string_t& space = internal::space<char_t>();
+
+    VecT vec;
+
+    size_t first = str.find_first_not_of(space);
+    assert(first != string_t::npos);
+
+    if (!opt.lbracket().empty()) {
+        assert(str[first] == opt.lbracket()[0]);
+        first = str.find_first_not_of(space, first + 1);
+    }
+
+    size_t last = str.find_last_not_of(space);
+    assert(last != string_t::npos);
+
+    if (!opt.rbracket().empty()) {
+        assert(str[last] == opt.rbracket()[0]);
+        last = str.find_last_not_of(space, last - 1);
+    }
+
+    assert(first < last);
+
+    std::string fields = str.substr(first, last - first + 1);
+    first = 0;
+    size_t pos = 0;
+
+    while ((pos = fields.find_first_of(opt.comma(), first)) != string_t::npos) {
+        assert(pos > first);
+
+        value_t v = to<value_t>(fields.substr(first, pos - first));
+        vec.push_back(v);
+        first = pos + 1;
+    }
+
+    value_t v = to<value_t>(fields.substr(first, pos - first));
+    vec.push_back(v);
+
+    return vec;
+}
 
 //-----------------------------------------------------------------------------
 
