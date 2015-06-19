@@ -82,7 +82,7 @@
 namespace conv {
 
 const std::string& version() {
-    static std::string ver("0.3.0");
+    static std::string ver("0.3.1");
     return ver;
 }
 
@@ -182,9 +182,7 @@ class to<char> {
         value_ = static_cast<char>(value);
     }
 
-    explicit to(const char* str) {
-        value_ = static_cast<char>(to<int>(str));
-    }
+    explicit to(const char* str) { value_ = static_cast<char>(to<int>(str)); }
 
     explicit to(const std::string& str) {
         value_ = static_cast<char>(to<int>(str));
@@ -307,8 +305,8 @@ class to<std::string> : public std::string {
     explicit to(unsigned char value) { from_int8(value); }
 
     explicit to(bool value) {
-        value ? std::string::operator=("true")
-              : std::string::operator=("false");
+        value ? std::string::operator=("true") : std::string::operator=(
+                                                     "false");
     }
 
     explicit to(const char* str) : std::string(str) {}
@@ -348,8 +346,8 @@ class to<std::wstring> : public std::wstring {
     explicit to(unsigned char value) { from_int8(value); }
 
     explicit to(bool value) {
-        value ? std::wstring::operator=(L"true")
-              : std::wstring::operator=(L"false");
+        value ? std::wstring::operator=(L"true") : std::wstring::operator=(
+                                                       L"false");
     }
 
     explicit to(const char* str) { from_string(str); }
@@ -391,7 +389,7 @@ class to<std::vector<T> > : public std::vector<T> {
    public:
     template <typename U>
     explicit to(const std::vector<U>& v)
-        : std::vector<T>(v.size()) {
+          : std::vector<T>(v.size()) {
         for (size_t i = 0; i < v.size(); ++i) {
             std::vector<T>::operator[](i) = to<T>(v[i]);
         }
@@ -418,33 +416,33 @@ class to<std::map<K1, V1> > : public std::map<K1, V1> {
 
 class parse_options {
    public:
-       parse_options() : lbracket_("["), rbracket_("]"), comma_(",") {}
+    parse_options() : lbracket_("["), rbracket_("]"), comma_(",") {}
 
-       parse_options& lbracket(const std::string& s) {
-           lbracket_ = s;
-           return *this;
-       }
+    parse_options& lbracket(const std::string& s) {
+        lbracket_ = s;
+        return *this;
+    }
 
-       const std::string& lbracket() const { return lbracket_; }
+    const std::string& lbracket() const { return lbracket_; }
 
-       parse_options& rbracket(const std::string& s) {
-           rbracket_ = s;
-           return *this;
-       }
+    parse_options& rbracket(const std::string& s) {
+        rbracket_ = s;
+        return *this;
+    }
 
-       const std::string& rbracket() const { return rbracket_; }
+    const std::string& rbracket() const { return rbracket_; }
 
-       parse_options& comma(const std::string& s) {
-           comma_ = s;
-           return *this;
-       }
+    parse_options& comma(const std::string& s) {
+        comma_ = s;
+        return *this;
+    }
 
-       const std::string& comma() const { return comma_; }
+    const std::string& comma() const { return comma_; }
 
    private:
-       std::string lbracket_;
-       std::string rbracket_;
-       std::string comma_;
+    std::string lbracket_;
+    std::string rbracket_;
+    std::string comma_;
 };
 
 inline parse_options lbracket(const std::string& s) {
@@ -460,7 +458,8 @@ inline parse_options comma(const std::string& s) {
 }
 
 template <typename VecT>
-inline VecT parse(const std::string& str, const parse_options& opt = parse_options()) {
+inline VecT parse(const std::string& str,
+                  const parse_options& opt = parse_options()) {
     typedef char char_t;
     typedef std::basic_string<char_t> string_t;
     typedef typename VecT::value_type value_t;
@@ -485,21 +484,21 @@ inline VecT parse(const std::string& str, const parse_options& opt = parse_optio
         last = str.find_last_not_of(space, last - 1);
     }
 
-    assert(first < last);
+    assert(first <= last);
 
     std::string fields = str.substr(first, last - first + 1);
     first = 0;
     size_t pos = 0;
 
     while ((pos = fields.find_first_of(opt.comma(), first)) != string_t::npos) {
-        assert(pos > first);
+        assert(first < pos);
 
         value_t v = to<value_t>(fields.substr(first, pos - first));
         vec.push_back(v);
         first = pos + 1;
     }
 
-    value_t v = to<value_t>(fields.substr(first, pos - first));
+    value_t v = to<value_t>(fields.substr(first));
     vec.push_back(v);
 
     return vec;
