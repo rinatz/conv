@@ -52,7 +52,7 @@ And conv::to&lt;std::string&gt;(T) will be enabled.
 
 ## Version
 
-0.1.1
+0.2.0
 
 ## Compilers
 

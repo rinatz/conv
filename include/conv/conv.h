@@ -82,7 +82,7 @@
 namespace conv {
 
 const std::string& version() {
-    static std::string ver("0.1.1");
+    static std::string ver("0.2.0");
     return ver;
 }
 
@@ -182,8 +182,16 @@ class to<char> {
         value_ = static_cast<char>(value);
     }
 
+    explicit to(const char* str) {
+        value_ = static_cast<char>(to<int>(str));
+    }
+
     explicit to(const std::string& str) {
         value_ = static_cast<char>(to<int>(str));
+    }
+
+    explicit to(const wchar_t* wstr) {
+        value_ = static_cast<char>(to<int>(wstr));
     }
 
     explicit to(const std::wstring& wstr) {
@@ -206,8 +214,16 @@ class to<signed char> {
         value_ = static_cast<char>(value);
     }
 
+    explicit to(const char* str) {
+        value_ = static_cast<signed char>(to<int>(str));
+    }
+
     explicit to(const std::string& str) {
         value_ = static_cast<signed char>(to<int>(str));
+    }
+
+    explicit to(const wchar_t* wstr) {
+        value_ = static_cast<signed char>(to<int>(wstr));
     }
 
     explicit to(const std::wstring& wstr) {
@@ -230,7 +246,15 @@ class to<unsigned char> {
         value_ = static_cast<char>(value);
     }
 
+    explicit to(const char* str) {
+        value_ = static_cast<unsigned char>(to<int>(str));
+    }
+
     explicit to(const std::string& str) {
+        value_ = static_cast<unsigned char>(to<int>(str));
+    }
+
+    explicit to(const wchar_t* str) {
         value_ = static_cast<unsigned char>(to<int>(str));
     }
 
@@ -254,8 +278,12 @@ class to<bool> {
         value_ = static_cast<T>(value);
     }
 
+    explicit to(const char* str) { value_ = !std::string(str).empty(); }
     explicit to(const std::string& str) { value_ = !str.empty(); }
+
+    explicit to(const wchar_t* wstr) { value_ = !std::wstring(wstr).empty(); }
     explicit to(const std::wstring& wstr) { value_ = !wstr.empty(); }
+
     operator bool() const { return value_; }
 
    private:
@@ -274,23 +302,9 @@ class to<std::string> : public std::string {
         std::string::operator=(out.str());
     }
 
-    explicit to(char value) {
-        std::ostringstream out;
-        out << static_cast<int>(value);
-        std::string::operator=(out.str());
-    }
-
-    explicit to(signed char value) {
-        std::ostringstream out;
-        out << static_cast<int>(value);
-        std::string::operator=(out.str());
-    }
-
-    explicit to(unsigned char value) {
-        std::ostringstream out;
-        out << static_cast<int>(value);
-        std::string::operator=(out.str());
-    }
+    explicit to(char value) { from_int8(value); }
+    explicit to(signed char value) { from_int8(value); }
+    explicit to(unsigned char value) { from_int8(value); }
 
     explicit to(bool value) {
         value ? std::string::operator=("true")
@@ -304,6 +318,12 @@ class to<std::string> : public std::string {
     explicit to(const std::wstring& wstr) { from_wstring(wstr); }
 
    private:
+    void from_int8(int value) {
+        std::ostringstream out;
+        out << value;
+        std::string::operator=(out.str());
+    }
+
     void from_wstring(const std::wstring& wstr) {
         std::vector<char> mbs(wstr.size() * MB_CUR_MAX + 1);
         std::wcstombs(mbs.data(), wstr.data(), mbs.size());
@@ -323,27 +343,13 @@ class to<std::wstring> : public std::wstring {
         std::wstring::operator=(out.str());
     }
 
-    explicit to(char value) {
-        std::wostringstream out;
-        out << static_cast<int>(value);
-        std::wstring::operator=(out.str());
-    }
-
-    explicit to(signed char value) {
-        std::wostringstream out;
-        out << static_cast<int>(value);
-        std::wstring::operator=(out.str());
-    }
-
-    explicit to(unsigned char value) {
-        std::wostringstream out;
-        out << static_cast<int>(value);
-        std::wstring::operator=(out.str());
-    }
+    explicit to(char value) { from_int8(value); }
+    explicit to(signed char value) { from_int8(value); }
+    explicit to(unsigned char value) { from_int8(value); }
 
     explicit to(bool value) {
-        (value) ? std::wstring::operator=(L"true")
-                : std::wstring::operator=(L"false");
+        value ? std::wstring::operator=(L"true")
+              : std::wstring::operator=(L"false");
     }
 
     explicit to(const char* str) { from_string(str); }
@@ -353,6 +359,12 @@ class to<std::wstring> : public std::wstring {
     explicit to(const std::wstring& wstr) : std::wstring(wstr) {}
 
    private:
+    void from_int8(int value) {
+        std::wostringstream out;
+        out << value;
+        std::wstring::operator=(out.str());
+    }
+
     void from_string(const std::string& str) {
         std::vector<wchar_t> wcs(str.size() + 1);
         std::mbstowcs(wcs.data(), str.data(), wcs.size());
