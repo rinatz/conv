@@ -82,7 +82,7 @@
 namespace conv {
 
 const std::string& version() {
-    static std::string ver("0.3.1");
+    static std::string ver("0.3.2");
     return ver;
 }
 
@@ -542,15 +542,13 @@ inline std::ostream& operator<<(std::ostream& out, const std::vector<T>& v) {
     }
 
     typedef typename std::vector<T>::const_iterator iterator;
+    const char* sep = "";
 
     out << "[";
 
-    iterator iter = v.begin();
-    out << *iter;
-    ++iter;
-
-    for (/* NOP */; iter != v.end(); ++iter) {
-        out << ", " << *iter;
+    for (iterator iter = v.begin(); iter != v.end(); ++iter) {
+        out << sep << *iter;
+        sep = ", ";
     }
 
     out << "]";
@@ -565,15 +563,13 @@ inline std::wostream& operator<<(std::wostream& out, const std::vector<T>& v) {
     }
 
     typedef typename std::vector<T>::const_iterator iterator;
+    const wchar_t* sep = L"";
 
     out << L"[";
 
-    iterator iter = v.begin();
-    out << *iter;
-    ++iter;
-
-    for (/* NOP */; iter != v.end(); ++iter) {
-        out << L", " << *iter;
+    for (iterator iter = v.begin(); iter != v.end(); ++iter) {
+        out << sep << *iter;
+        sep = L", ";
     }
 
     out << L"]";
@@ -590,15 +586,13 @@ inline std::ostream& operator<<(std::ostream& out, const std::map<K, V>& m) {
     }
 
     typedef typename std::map<K, V>::const_iterator iterator;
+    const char* sep = "";
 
     out << "{";
 
-    iterator iter = m.begin();
-    out << iter->first << ": " << iter->second;
-    ++iter;
-
-    for (/* NOP */; iter != m.end(); ++iter) {
-        out << ", " << iter->first << ": " << iter->second;
+    for (iterator iter = m.begin(); iter != m.end(); ++iter) {
+        out << sep << iter->first << ": " << iter->second;
+        sep = ", ";
     }
 
     out << "}";
@@ -613,15 +607,13 @@ inline std::wostream& operator<<(std::wostream& out, const std::map<K, V>& m) {
     }
 
     typedef typename std::map<K, V>::const_iterator iterator;
+    const wchar_t* sep = L"";
 
     out << L"{";
 
-    iterator iter = m.begin();
-    out << iter->first << L": " << iter->second;
-    ++iter;
-
-    for (/* NOP */; iter != m.end(); ++iter) {
-        out << L", " << iter->first << L": " << iter->second;
+    for (iterator iter = m.begin(); iter != m.end(); ++iter) {
+        out << sep << iter->first << L": " << iter->second;
+        sep = L", ";
     }
 
     out << L"}";
