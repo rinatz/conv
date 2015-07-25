@@ -82,7 +82,7 @@
 namespace conv {
 
 const std::string& version() {
-    static std::string ver("0.3.2");
+    static std::string ver("0.3.3");
     return ver;
 }
 
@@ -209,7 +209,7 @@ class to<signed char> {
    public:
     template <typename U>
     explicit to(const U& value) {
-        value_ = static_cast<char>(value);
+        value_ = static_cast<signed char>(value);
     }
 
     explicit to(const char* str) {
@@ -241,7 +241,7 @@ class to<unsigned char> {
    public:
     template <typename U>
     explicit to(const U& value) {
-        value_ = static_cast<char>(value);
+        value_ = static_cast<unsigned char>(value);
     }
 
     explicit to(const char* str) {
@@ -273,7 +273,7 @@ class to<bool> {
    public:
     template <typename T>
     explicit to(const T& value) {
-        value_ = static_cast<T>(value);
+        value_ = static_cast<bool>(value);
     }
 
     explicit to(const char* str) { value_ = !std::string(str).empty(); }
