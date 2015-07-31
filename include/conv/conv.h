@@ -81,8 +81,8 @@
 
 namespace conv {
 
-const std::string& version() {
-    static std::string ver("0.3.3");
+inline const std::string& version() {
+    static std::string ver("0.3.4");
     return ver;
 }
 
